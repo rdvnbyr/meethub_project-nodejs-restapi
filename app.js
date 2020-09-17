@@ -17,7 +17,7 @@ app.use('/shop', shopRoutes);
 
 // error handling
 app.use((error, req, res, next) => {
-    console.log('ERROR',error);
+    console.log('--ERROR--',error);
     const status = error.statusCode || 500;
     const message = error.message;
     const data = error.data;
