@@ -46,13 +46,13 @@ exports.login = async (req, res, next) => {
         const user = await User.findOne({email: email});
         if (!user) {
             const error = new Error('User not found');
-            error.statusCode(401);
+            error.statusCode = 401;
             throw error;
         };
         const isEqual = await bcrypt.compare(password, user.password);
         if (!isEqual) {
             const error = new Error('password does not match');
-            error.statusCode(401);
+            error.statusCode = 401;
             throw error;
         };
         const token = jwt.sign(
