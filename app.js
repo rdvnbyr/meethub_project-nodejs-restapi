@@ -5,12 +5,13 @@ const cors = require('cors');
 
 const app = express();
 
-// cors
+// cors policy
 app.use(cors());
 
 // body parsed
 app.use(bodyParser.json());
 
+// import all routes
 const authRoutes = require('./routes/auth');
 const shopRoutes = require('./routes/shop');
 const adminRoutes = require('./routes/admin');

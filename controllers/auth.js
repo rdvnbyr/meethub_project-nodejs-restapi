@@ -31,11 +31,11 @@ exports.signup = async (req, res, next) => {
             message: 'user created successfully',
             data: user
         });
-    } catch(err) {
-        if (!err.statusCode) {
-            err.statusCode = 500;
+    } catch(error) {
+        if (!error.statusCode) {
+            error.statusCode = 500;
         };
-        next(err);
+        next(error);
     }
 };
 

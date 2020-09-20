@@ -11,7 +11,7 @@ router.post(
     '/add-products',
     [
         body('title').isString(),
-        body('details').isString().isLength({max: 200}),
+        body('details').isString().isLength({max: 400}),
         body('image').isString(),
         body('price').isNumeric(),
         body('category').isString()
