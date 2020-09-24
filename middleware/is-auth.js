@@ -4,7 +4,7 @@ module.exports = async (req, res, next) => {
     try {
         const authorizationHeader = req.get('Authorization');
         if (!authorizationHeader) {
-            const error = new Error('Not authenticated');
+            const error = new Error('User not authenticated');
             error.statusCode = 401;
             throw error;
         };
@@ -17,6 +17,7 @@ module.exports = async (req, res, next) => {
         };
         req.userId = decodedToken.userId;
         next();
+
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500;

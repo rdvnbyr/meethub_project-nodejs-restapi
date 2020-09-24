@@ -7,6 +7,16 @@ const adminController = require('../controllers/admin');
 
 const router = express.Router();
 
+router.get('/get-products',isAuth, adminController.getProducts);
+
+router.get('/get-update-product/:productId', isAuth, adminController.getUpdateProduct);
+
+router.get('/get-product-details', isAuth, adminController.getOneProduct);
+
+router.patch('/update-product',isAuth, adminController.editProduct);
+
+router.delete('/delete-product',isAuth, adminController.deleteProduct);
+
 router.post(
     '/add-products',
     [

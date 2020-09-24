@@ -1,8 +1,16 @@
 const { validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+const sendgridTransporter = require('nodemailer-sendgrid-transport');
 
 const User = require('../models/user');
+
+const transporter = nodemailer.createTransport(sendgridTransporter({
+    auth: {
+        api_key: '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'
+    }
+}));
 
 exports.signup = async (req, res, next) => {
     try {
@@ -30,6 +38,12 @@ exports.signup = async (req, res, next) => {
         res.status(200).json({
             message: 'user created successfully',
             data: user
+        });
+        transporter.sendMail({
+            to: email,
+            from: 'test@webdevscope.com',
+            subject: 'kayit islemi basari ile gerceklesmistir.',
+            html: `<h1>MERHABA</h1><h3>${username}</h3>`
         });
     } catch(error) {
         if (!error.statusCode) {
@@ -61,7 +75,7 @@ exports.login = async (req, res, next) => {
                 userid: user._id.toString()
             },
             'jwt_secret_key',
-            { expiresIn: '1h' }
+            { expiresIn: '3h' }
         );
         res.status(200).json({
             token: token,

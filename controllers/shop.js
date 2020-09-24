@@ -12,10 +12,28 @@ exports.getProducts = async (req, res, next) => {
             message: 'all data has been send',
             data: products
         })
-    } catch (err) {
-        if (!err.statusCode) {
-            err.statusCode = 500;
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500;
         };
-        next(err);
+        next(error);
+    };
+};
+
+exports.getOneProduct = async (req, res, next) => {
+    try {
+        const prodId = req.params.productId;
+        const product = await Product.findById(prodId);
+        if (!product) {
+            const error = new Error('Product not found');
+            error.statusCode = 404;
+            throw error;
+        };
+        res.status(200).json(product);
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500;
+        };
+        next(error);
     };
 };
