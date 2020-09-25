@@ -80,7 +80,7 @@ exports.login = async (req, res, next) => {
         res.status(200).json({
             token: token,
             userId: user._id.toString(),
-            data: user
+            user: user
         });
     } catch (error) {
         if (!error.statusCode) {
