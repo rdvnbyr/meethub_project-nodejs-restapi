@@ -36,7 +36,7 @@ exports.signup = async (req, res, next) => {
         });
         await user.save();
         res.status(200).json({
-            message: 'user created successfully',
+            message: 'User created successfully',
             data: user
         });
         transporter.sendMail({
@@ -57,12 +57,20 @@ exports.login = async (req, res, next) => {
     try {
         const email = req.body.email;
         const password = req.body.password;
+        const status = req.body.status;
+        // status control for admin
+        if ((status || status === "") && status !== 'admin') {
+            const error = new Error('Only the admin user can access');
+            error.statusCode = 401;
+            throw error;
+        };
         const user = await User.findOne({email: email});
         if (!user) {
             const error = new Error('User not found');
             error.statusCode = 401;
             throw error;
         };
+
         const isEqual = await bcrypt.compare(password, user.password);
         if (!isEqual) {
             const error = new Error('password does not match');
