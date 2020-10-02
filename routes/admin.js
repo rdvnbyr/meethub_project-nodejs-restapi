@@ -2,6 +2,7 @@ const express = require('express');
 const { body } = require('express-validator');
 
 const isAuth = require('../middleware/is-auth');
+// const isAdmin = require('../middleware/is-admin');
 
 const adminController = require('../controllers/admin');
 
@@ -11,18 +12,27 @@ router.get('/get-products',isAuth, adminController.getProducts);
 
 router.get('/get-update-product/:productId', isAuth, adminController.getUpdateProduct);
 
-router.get('/get-product-details', isAuth, adminController.getOneProduct);
+router.post('/get-product-details', isAuth, adminController.getOneProduct);// ????
 
-router.patch('/update-product',isAuth, adminController.editProduct);
+router.patch(
+    '/update-product/:productId',
+    [
+        body('title').isString(),
+        body('details').isString().isLength({max: 400}),
+        body('price').isNumeric(),
+        body('category').isString()
+    ],
+    isAuth,
+    adminController.editProduct
+);
 
-router.delete('/delete-product',isAuth, adminController.deleteProduct);
+router.delete('/delete-product/:productId',isAuth, adminController.deleteProduct);
 
 router.post(
     '/add-products',
     [
         body('title').isString(),
         body('details').isString().isLength({max: 400}),
-        body('image').isString(),
         body('price').isNumeric(),
         body('category').isString()
     ],

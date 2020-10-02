@@ -16,6 +16,7 @@ module.exports = async (req, res, next) => {
             throw error;
         };
         req.userId = decodedToken.userId;
+        req.status = decodedToken.status;
         next();
 
     } catch (error) {

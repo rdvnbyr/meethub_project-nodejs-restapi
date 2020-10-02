@@ -1,7 +1,9 @@
+const path = require('path');
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const multer = require('multer');
 
 const app = express();
 
@@ -10,6 +12,38 @@ app.use(cors());
 
 // body parsed
 app.use(bodyParser.json());
+
+// multer
+const fileStorage = multer.diskStorage({
+    destination: ( req, file, cb ) => {// nereye kayit yapilacak
+        cb(null, 'images');
+    },
+    filename: (req, file, cb) => {// hangi ism ile kayit yapilacak
+        cb( null, new Date().toISOString() + '-' + file.originalname );
+    }
+});
+
+const fileFilter = ( req, file, cb ) => {
+    if (
+        file.mimetype === 'image/jpg' ||
+        file.mimetype === 'image/png' ||
+        file.mimetype === 'image/jpeg'
+    ) {
+        cb(null, true);
+    } else {
+        cb(null, false);
+    };
+};
+
+// multer image upload middleware
+app.use(
+    multer({
+        storage: fileStorage,
+        fileFilter: fileFilter
+    }).single('image'));
+
+// path for images
+app.use('/images', express.static(path.join( __dirname, 'images' )));
 
 // import all routes
 const authRoutes = require('./routes/auth');

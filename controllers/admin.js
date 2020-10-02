@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const { validationResult } = require('express-validator');
 const Product = require('../models/products');
 
@@ -45,9 +47,16 @@ exports.postProducts = async (req, res, next) => {
             error.data = errors.array();
             throw error;
         };
+        if (!req.file) {
+            const error = new Error('No image uploaded');
+            error.statusCode = 422;
+            error.data = errors.array();
+            throw error;
+        }
+
+        const image = req.file.path;
         const title = req.body.title;
         const details = req.body.details;
-        const image = req.body.image;
         const price = req.body.price;
         const category = req.body.category;
 
@@ -95,21 +104,38 @@ exports.getUpdateProduct = async (req, res, next) => {
 
 // update product
 exports.editProduct = async (req, res, next) => {
-
     try {
+        // const errors = validationResult(req);
+        // if (!errors.isEmpty()) {
+        //     const error = new Error('Validation failed');
+        //     error.statusCode = 422;
+        //     error.data = errors.array();
+        //     throw error;
+        // };
         // const prodId = req.params.productId;
-        const prodId = req.body._id;
+        const prodId = req.params.productId;
         const updatedTitle = req.body.title;
         const updatedDetails = req.body.details;
-        const updatedImage = req.body.image;
         const updatedPrice = req.body.price;
         const updatedCategory = req.body.category;
+        let updatedImage = req.body.image;
+        if (req.file) {
+            updatedImage = req.file.path;
+        };
+        if (!updatedImage) {
+            const error = new Error('No file Pict');
+            error.statusCode = 422;
+            throw error;
+        };
 
         const product = await Product.findById(prodId);
         if (!product) {
             const error = new Error('Product not found');
             error.statusCode = 404;
             throw error;
+        };
+        if ( updatedImage !== product.image ) {
+            deleteImage(product.image);
         };
         product.title = updatedTitle;
         product.details = updatedDetails;
@@ -130,9 +156,10 @@ exports.editProduct = async (req, res, next) => {
 
 exports.deleteProduct = async (req, res, next) => {
     try {
-        const prodId = req.body._id;
+        const prodId = req.params.productId;
         console.log(prodId);
         const product = await Product.findByIdAndDelete(prodId);
+        deleteImage(product.image);
         res.status(200).json({
             message: 'Product successfully deleted',
             data: product
@@ -145,3 +172,8 @@ exports.deleteProduct = async (req, res, next) => {
     };
 };
 
+
+const deleteImage = filePath => {
+    filePath = path.join(__dirname + '..', filePath );
+    fs.unlink( filePath, error => console.log(error) );
+};

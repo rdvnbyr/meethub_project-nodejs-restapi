@@ -57,19 +57,20 @@ exports.login = async (req, res, next) => {
     try {
         const email = req.body.email;
         const password = req.body.password;
-        const status = req.body.status;
-        // status control for admin
-        if ((status || status === "") && status !== 'admin') {
-            const error = new Error('Only the admin user can access');
-            error.statusCode = 401;
-            throw error;
-        };
         const user = await User.findOne({email: email});
         if (!user) {
             const error = new Error('User not found');
             error.statusCode = 401;
             throw error;
         };
+
+        const status = user.status;
+        // // status control for admin
+        // if ((status || status === "") && status !== 'admin') {
+        //     const error = new Error('Only the admin user can access');
+        //     error.statusCode = 401;
+        //     throw error;
+        // };
 
         const isEqual = await bcrypt.compare(password, user.password);
         if (!isEqual) {
@@ -88,7 +89,7 @@ exports.login = async (req, res, next) => {
         res.status(200).json({
             token: token,
             userId: user._id.toString(),
-            user: user
+            userStatus: user.status
         });
     } catch (error) {
         if (!error.statusCode) {
