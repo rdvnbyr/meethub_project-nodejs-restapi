@@ -55,6 +55,7 @@ exports.postProducts = async (req, res, next) => {
         }
 
         const image = req.file.path;
+        console.log(image)
         const title = req.body.title;
         const details = req.body.details;
         const price = req.body.price;
