@@ -22,6 +22,10 @@ const productsSchema = new Schema({
         type: String,
         required: true
     },
+    state: {
+        type: String,
+        required: true
+    },
     // creator: {
     //     type: Schema.Types.ObjectId,
     //     ref: 'User',

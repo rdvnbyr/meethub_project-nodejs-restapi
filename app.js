@@ -27,7 +27,8 @@ const fileFilter = ( req, file, cb ) => {
     if (
         file.mimetype === 'image/jpg' ||
         file.mimetype === 'image/png' ||
-        file.mimetype === 'image/jpeg'
+        file.mimetype === 'image/jpeg' ||
+        file.mimetype === 'image/webp'
     ) {
         cb(null, true);
     } else {
@@ -49,10 +50,12 @@ app.use('/images', express.static(path.join( __dirname, 'images' )));
 const authRoutes = require('./routes/auth');
 const shopRoutes = require('./routes/shop');
 const adminRoutes = require('./routes/admin');
+const cartRoutes = require('./routes/cart');
 
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/shop', shopRoutes);
+app.use('/cart', cartRoutes);
 
 // error handling
 app.use((error, req, res, next) => {

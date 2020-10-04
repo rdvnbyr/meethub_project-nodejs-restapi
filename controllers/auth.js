@@ -84,7 +84,7 @@ exports.login = async (req, res, next) => {
                 userid: user._id.toString()
             },
             'jwt_secret_key',
-            { expiresIn: '3h' }
+            { expiresIn: '24h' }
         );
         res.status(200).json({
             token: token,

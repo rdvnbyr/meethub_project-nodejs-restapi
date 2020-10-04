@@ -5,7 +5,13 @@ const Product = require('../models/products');
 
 exports.getProducts = async (req, res, next) => {
     try {
-        const allProducts = await Product.find();
+        const state = req.body.state;
+        let allProducts;
+        if (state) {
+            allProducts = await Product.find({state: state});
+        } else {
+            allProducts = await Product.find();
+        }
         if (!allProducts) {
             const errors = new Error('Products not found');
             errors.statusCode = 404;
@@ -24,6 +30,7 @@ exports.getOneProduct = async (req, res, next) => {
     try {
         const prodId = req.body._id;
         const product = await Product.findById(prodId);
+        
         if (!product) {
             const error = new Error('Product not found');
             error.statusCode = 404;
@@ -60,13 +67,15 @@ exports.postProducts = async (req, res, next) => {
         const details = req.body.details;
         const price = req.body.price;
         const category = req.body.category;
+        const state = req.body.state;
 
         const product = new Product({
             title: title,
             details: details,
             image: image,
             price: price,
-            category: category
+            category: category,
+            state: state
         })
 
         await product.save();
@@ -119,6 +128,7 @@ exports.editProduct = async (req, res, next) => {
         const updatedDetails = req.body.details;
         const updatedPrice = req.body.price;
         const updatedCategory = req.body.category;
+        const updatedState = req.body.state;
         let updatedImage = req.body.image;
         if (req.file) {
             updatedImage = req.file.path;
@@ -143,6 +153,7 @@ exports.editProduct = async (req, res, next) => {
         product.image = updatedImage;
         product.price = updatedPrice;
         product.category = updatedCategory;
+        product.state = updatedState;
         const updatedProduct  = new Product(product);
         await updatedProduct.save();
         res.status(200).json(updatedProduct);

@@ -32,7 +32,7 @@ router.post(
     '/add-products',
     [
         body('title').isString(),
-        body('details').isString().isLength({max: 400}),
+        body('details').isString(),
         body('price').isNumeric(),
         body('category').isString()
     ],

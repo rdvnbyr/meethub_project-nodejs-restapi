@@ -20,6 +20,24 @@ exports.getProducts = async (req, res, next) => {
     };
 };
 
+exports.getProductsWeeksDeal = async (req, res, next) => {
+    try {
+        const state = req.body.state;
+        const products = await Product.find({state: state});
+        if (!products) {
+            const error = new Error('Products not found');
+            error.statusCode = 404;
+            throw error;
+        }
+        res.status(200).json(products);
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500;
+        };
+        next(error);
+    };
+};
+
 exports.getOneProduct = async (req, res, next) => {
     try {
         const prodId = req.params.productId;
