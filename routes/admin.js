@@ -20,7 +20,7 @@ router.patch(
         body('title').isString(),
         body('details').isString().isLength({max: 400}),
         body('price').isNumeric(),
-        body('category').isString()
+        body('brand').isString()
     ],
     isAuth,
     adminController.editProduct
@@ -33,8 +33,7 @@ router.post(
     [
         body('title').isString(),
         body('details').isString(),
-        body('price').isNumeric(),
-        body('category').isString()
+        body('brand').isString()
     ],
     isAuth,
     adminController.postProducts

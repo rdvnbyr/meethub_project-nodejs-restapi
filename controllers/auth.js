@@ -37,7 +37,7 @@ exports.signup = async (req, res, next) => {
         await user.save();
         res.status(200).json({
             message: 'User created successfully',
-            data: user
+            data: {...user, password: null}
         });
         transporter.sendMail({
             to: email,
@@ -89,7 +89,7 @@ exports.login = async (req, res, next) => {
         res.status(200).json({
             token: token,
             userId: user._id.toString(),
-            user: user,
+            user: {...user, password: null},
             userStatus: user.status
         });
     } catch (error) {

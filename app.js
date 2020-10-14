@@ -1,9 +1,13 @@
-const path = require('path');
 const express = require('express');
-const mongoose = require('mongoose');
+const connectDB = require('./config/db');
+const path = require('path');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const multer = require('multer');
+const dotenv = require('dotenv');
+const colors = require('colors');
+
+dotenv.config();
 
 const app = express();
 
@@ -69,13 +73,11 @@ app.use((error, req, res, next) => {
     })
 });
 
+const port = process.env.PORT || 8080;
 
 // DB COnnect
-mongoose.connect(
-    'mongodb+srv://rdvnbyr:CtF0AoKcm7qkQJuP@cluster0.e7gk5.mongodb.net/meet-hub?retryWrites=true&w=majority',
-    { useNewUrlParser: true }
-)
-.then( result => {
-    app.listen(process.env.PORT || 8080);
-})
-.catch( err => console.log('DB_ERROR', err));
+connectDB();
+app.listen(
+    port,
+    console.log(`Server running in ${process.env.NODE_ENV} on port ${port}`.yellow.bold)
+);

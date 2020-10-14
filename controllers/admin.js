@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { validationResult } = require('express-validator');
 const Product = require('../models/products');
+const User = require('../models/user');
 
 exports.getProducts = async (req, res, next) => {
     try {
@@ -61,29 +62,38 @@ exports.postProducts = async (req, res, next) => {
             throw error;
         }
 
+        const {
+            title,
+            details,
+            price,
+            brand,
+            state,
+            _id
+        } = req.body;
         const image = req.file.path;
-        console.log(image)
-        const title = req.body.title;
-        const details = req.body.details;
-        const price = req.body.price;
-        const category = req.body.category;
-        const state = req.body.state;
 
-        const product = new Product({
-            title: title,
-            details: details,
-            image: image,
-            price: price,
-            category: category,
-            state: state
-        })
-
-        await product.save();
-
-        res.status(200).json({
-            message: 'Product successfully created by admin',
-            data: product
-        });
+        const user = await User.findById(_id);
+        if(user) {
+            const product = new Product({
+                title: title,
+                details: details,
+                image: image,
+                price: price,
+                brand: brand,
+                state: state,
+                creator: user._id
+            });
+            await product.save();
+            res.status(200).json({
+                message: 'Product successfully created by admin',
+                data: product
+            });
+        } else {
+            const error = new Error('User not found');
+            error.statusCode = 404;
+            error.data = errors.array();
+            throw error;
+        }
 
     } catch (error) {
         if (!error.statusCode) {
