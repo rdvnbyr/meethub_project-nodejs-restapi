@@ -6,7 +6,7 @@ const Product = require('../models/products');
 exports.getCart = async (req, res, next) => {
     try {
         const { userId } = req.body;
-        const cart = await Cart.find({customer: userId}).populate('customer');
+        const cart = await Cart.find({customer: userId}).populate('customer').populate({path: 'items', populate: {path: 'product', model: 'Products'}});
         res.status(200).json(cart);
     } catch (error) {
         if (!error.statusCode) {
@@ -49,7 +49,7 @@ exports.createCart = async (req, res, next) => {
             },
             paymentMethod: '',
             paymentResult: {},
-            totalPrice: product.price * 1,
+            totalPrice: (product.price * 1) + (product.price * 0.03) + (product.price * 0.05) ,
             shippingPrice: parseFloat(product.price * 0.03).toFixed(),
             taxPrice: parseFloat(product.price * 0.05).toFixed(),
             shippingAt: '',
@@ -73,7 +73,7 @@ exports.createCart = async (req, res, next) => {
 
 exports.updateCart = async (req, res, next) => {
     try {
-        const { userId, productId, qty, cartId } = req.body;
+        const { userId, productId, qty, cartId, removeProduct } = req.body;
         // const cartFind = await Cart.findById(cartId, 
         //     {
         //         customer: userId,
@@ -85,8 +85,9 @@ exports.updateCart = async (req, res, next) => {
         //     }
         // );
         // let currentQty = cartFind.items[0].quantity;
+        
         if(qty) {
-            const cart = await Cart.findByIdAndUpdate(cartId,
+            const cartx = await Cart.findByIdAndUpdate(cartId,
                 {
                     customer: userId,
                     items: [
@@ -97,7 +98,24 @@ exports.updateCart = async (req, res, next) => {
                     ]
                 }
             );
-            const cartSave = await cart.save();
+            const cartSave = await cartx.save();
+            res.status(200).json(cartSave);
+        }
+
+        if(removeProduct) {
+            const carty = await Cart.findByIdAndUpdate(cartId,
+                {
+                    customer: userId,
+                    items: [
+                        {
+                            product: productId,
+                            quantity: 0,
+                            isActive: false
+                        }
+                    ]
+                }
+            );
+            const cartSave = await carty.save();
             res.status(200).json(cartSave);
         }
     } catch (error) {
