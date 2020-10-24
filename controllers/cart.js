@@ -1,7 +1,7 @@
 const Cart = require('../models/cart');
 const User = require('../models/user');
 const Product = require('../models/products');
-
+const colors = require('colors');
 
 exports.getCart = async (req, res, next) => {
     try {
@@ -20,48 +20,69 @@ exports.getCart = async (req, res, next) => {
 exports.createCart = async (req, res, next) => {
     try {
         const { userId, productId } = req.body;
+        let total;
+        let shipping;
+        let tax;
         
         const user = await User.findById(userId);
         const product = await Product.findById(productId);
-        
         if (!user || !product) {
             const error = new Error('Product or User not found');
             error.statusCode = 404;
             throw error;
         }
 
-        const newCart = new Cart({
-            customer: user._id,
-            items: [
-                {
-                    product: product._id,
-                    quantity: 1
-                }
-            ],
-            shippingAddress: {
-                firstname: '',
-                lastname: '',
-                address: '',
-                city: '',
-                region: '',
-                postCode: 0,
-                country: ''
-            },
-            paymentMethod: '',
-            paymentResult: {},
-            totalPrice: (product.price * 1) + (product.price * 0.03) + (product.price * 0.05) ,
-            shippingPrice: parseFloat(product.price * 0.03).toFixed(),
-            taxPrice: parseFloat(product.price * 0.05).toFixed(),
-            shippingAt: '',
-            paidAt: '',
-            deliveredAt: '',
-            isPaid: false,
-            isDelivered: false
-        })
+        const cartUser = await Cart.find({customer: userId});
 
-        await newCart.save();
-        res.status(200).json(newCart);
-
+        if(!(cartUser.length > 0)) {
+            const newCart = new Cart({
+                customer: user._id,
+                items: [
+                    {
+                        product: product._id,
+                        quantity: 1,
+                        price: product.price * 1
+                    }
+                ],
+                shippingAddress: {
+                    firstname: '',
+                    lastname: '',
+                    address: '',
+                    city: '',
+                    region: '',
+                    postCode: 0,
+                    country: ''
+                },
+                paymentMethod: '',
+                paymentResult: {},
+                shippingPrice: (product.price * 0.01).toFixed(),
+                taxPrice: (product.price * 0.03).toFixed(),
+                totalPrice: (product.price * 1) + (product.price * 0.01) + (product.price * 0.03),
+                shippingAt: '',
+                paidAt: '',
+                deliveredAt: '',
+                isPaid: false,
+                isDelivered: false
+            })
+    
+            await newCart.save();
+            res.status(200).json({message: "Cart successfully created"});
+        } else {
+            const newItems = {
+                product: product._id,
+                quantity: 1,
+                price: product.price * 1
+            };
+            cartUser[0].items.push(newItems);
+            total = Number(cartUser[0].items.reduce((acc, product) => product.price + acc, 0)).toFixed();
+            shipping = (total * 0.01).toFixed();
+            tax = (total * 0.03).toFixed();
+            cartUser[0].shippingPrice = shipping;
+            cartUser[0].taxPrice = tax;
+            cartUser[0].totalPrice = Number(Number(cartUser[0].shippingPrice + cartUser[0].taxPrice) + Number(total)).toFixed();
+            await cartUser[0].save();
+            res.status(200).json({message: "Product successfully added"});
+        }
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500;
@@ -74,50 +95,52 @@ exports.createCart = async (req, res, next) => {
 exports.updateCart = async (req, res, next) => {
     try {
         const { userId, productId, qty, cartId, removeProduct } = req.body;
-        // const cartFind = await Cart.findById(cartId, 
-        //     {
-        //         customer: userId,
-        //         items: [
-        //             {
-        //                 product: productId
-        //             }
-        //         ]
-        //     }
-        // );
-        // let currentQty = cartFind.items[0].quantity;
-        
+        const product = await Product.findById(productId);
+        if (!product) {
+            const error = new Error('Product not found');
+            error.statusCode = 404;
+            throw error;
+        }
         if(qty) {
-            const cartx = await Cart.findByIdAndUpdate(cartId,
-                {
-                    customer: userId,
-                    items: [
-                        {
-                            product: productId,
-                            quantity: qty
-                        }
-                    ]
-                }
-            );
-            const cartSave = await cartx.save();
-            res.status(200).json(cartSave);
+            const cart = await Cart.findById(cartId);
+            const cartItems = cart.items.filter( p => p.product != productId);
+            const updatedProd = {
+                product: productId,
+                quantity: qty,
+                price: product.price * qty
+            };
+            cartItems.push(updatedProd);
+            cart.items = cartItems;
+            const total = Number(cart.items.reduce((acc, item) => item.price + acc, 0)).toFixed();
+            const shipping = (total * 0.01).toFixed();
+            const tax = (total * 0.03).toFixed();
+            cart.shippingPrice = shipping;
+            cart.taxPrice = tax;
+            cart.totalPrice = Number(Number(cart.shippingPrice + cart.taxPrice) + Number(total)).toFixed();
+
+            await Cart.findByIdAndUpdate(cartId, cart);
+            await cart.save();
+            res.status(200).json({message: "The Cart is successfully updated"});
         }
 
-        if(removeProduct) {
-            const carty = await Cart.findByIdAndUpdate(cartId,
-                {
-                    customer: userId,
-                    items: [
-                        {
-                            product: productId,
-                            quantity: 0,
-                            isActive: false
-                        }
-                    ]
-                }
-            );
-            const cartSave = await carty.save();
-            res.status(200).json(cartSave);
-        }
+        if(removeProduct || qty <= 0) {
+            const cartUser = await Cart.findById(cartId);
+            const newItems = cartUser.items.filter( item => item.product.toString() !== productId.toString() );
+            if(newItems.length === 0) {
+                await Cart.findByIdAndDelete(cartId);
+                res.status(200).json({message: 'Cart successfuly deleted'});
+            }
+            cartUser.items = newItems;
+            const total = Number(cartUser.items.reduce((acc, item) => item.price + acc, 0)).toFixed();
+            const shipping = (total * 0.01).toFixed();
+            const tax = (total * 0.03).toFixed();
+            cartUser.shippingPrice = shipping;
+            cartUser.taxPrice = tax;
+            cartUser.totalPrice = Number(Number(cartUser.shippingPrice + cartUser.taxPrice) + Number(total)).toFixed();
+            const updateCart = await Cart.findByIdAndUpdate(cartId, cartUser);
+            await updateCart.save();
+            res.status(200).json({message: "Product successfully deleted"});
+        };
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500;
@@ -126,31 +149,6 @@ exports.updateCart = async (req, res, next) => {
     }
 
 };
-
-// exports.deleteItemFromCart = async (req, res, next) => {
-//     try {
-//         const { userId, productId, cartId } = req.body;
-
-//         const cartFindandDelete = await Cart.findByIdAndUpdate(cartId,
-//             {
-//                 customer: userId,
-//                 items: [
-//                     {
-//                         product: productId,
-//                         isActive: false
-//                     }
-//                 ]
-//             }
-//         );
-//         const cartSave = await cartFindandDelete.save();
-//         res.status(200).json(cartSave);
-//     } catch (error) {
-//         if (!error.statusCode) {
-//             error.statusCode = 500;
-//         };
-//         next(error);
-//     }
-// };
 
 exports.deleteCart = async (req, res, next) => {
     try {
@@ -164,6 +162,33 @@ exports.deleteCart = async (req, res, next) => {
         next(error);
     }
 };
+
+/* exports.deleteItemFromCart = async (req, res, next) => {
+    try {
+        const { userId, productId, cartId } = req.body;
+
+        const cartFindandDelete = await Cart.findByIdAndUpdate(cartId,
+            {
+                customer: userId,
+                items: [
+                    {
+                        product: productId,
+                        isActive: false
+                    }
+                ]
+            }
+        );
+        const cartSave = await cartFindandDelete.save();
+        res.status(200).json(cartSave);
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500;
+        };
+        next(error);
+    }
+}; */
+
+
 
 
 // exports.xpostCartx = async (req, res, next) => {

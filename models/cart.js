@@ -13,10 +13,9 @@ const productsSchema = new Schema(
             required: true,
             default: 0
         },
-        isActive: {
-            type: Boolean,
-            required: true,
-            default: true
+        price: {
+            type: Number,
+            required: true
         }
     }
 );
