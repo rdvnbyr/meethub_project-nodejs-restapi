@@ -102,7 +102,7 @@ exports.updateShipping = async (req, res, next) => {
             error.statusCode = 404;
             throw error;
         };
-        const updateCart = await Cart.findByIdAndUpdate(cartId, {
+        await Cart.findByIdAndUpdate(cartId, {
             shippingAddress: updateShipping,
         });
         res.status(200).json({message: "update shipping successfuly done"});
