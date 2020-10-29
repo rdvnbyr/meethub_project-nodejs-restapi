@@ -11,8 +11,10 @@ router.post('/add-cart',isAuth, cartController.createCart);
 
 router.post('/update-cart',isAuth, cartController.updateCart);
 
+router.post('/update-shipping',isAuth, cartController.updateShipping);
+
 // router.post('/delete-product', isAuth, cartController.deleteItemFromCart);
 
-router.delete('/delete-cart', isAuth, cartController.deleteCart);
+router.post('/delete-cart', isAuth, cartController.deleteCart);
 
 module.exports = router;

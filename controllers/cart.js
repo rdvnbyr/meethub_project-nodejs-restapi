@@ -92,6 +92,28 @@ exports.createCart = async (req, res, next) => {
 
 };
 
+exports.updateShipping = async (req, res, next) => {
+    try {
+        const { cartId, updateShipping } = req.body;
+        console.log(updateShipping);
+        const cart = await Cart.findById(cartId);
+        if (!cart) {
+            const error = new Error('Product or User not found');
+            error.statusCode = 404;
+            throw error;
+        };
+        const updateCart = await Cart.findByIdAndUpdate(cartId, {
+            shippingAddress: updateShipping,
+        });
+        res.status(200).json({message: "update shipping successfuly done"});
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500;
+        };
+        next(error);
+    }
+};
+
 exports.updateCart = async (req, res, next) => {
     try {
         const { userId, productId, qty, cartId, removeProduct } = req.body;
@@ -119,7 +141,6 @@ exports.updateCart = async (req, res, next) => {
             cart.totalPrice = Number(Number(cart.shippingPrice + cart.taxPrice) + Number(total)).toFixed();
 
             await Cart.findByIdAndUpdate(cartId, cart);
-            await cart.save();
             res.status(200).json({message: "The Cart is successfully updated"});
         }
 
@@ -138,7 +159,6 @@ exports.updateCart = async (req, res, next) => {
             cartUser.taxPrice = tax;
             cartUser.totalPrice = Number(Number(cartUser.shippingPrice + cartUser.taxPrice) + Number(total)).toFixed();
             const updateCart = await Cart.findByIdAndUpdate(cartId, cartUser);
-            await updateCart.save();
             res.status(200).json({message: "Product successfully deleted"});
         };
     } catch (error) {
