@@ -22,22 +22,17 @@ exports.signup = async (req, res, next) => {
             throw error;
         };
 
-        const email = req.body.email;
-        const password = req.body.password;
-        const username = req.body.username;
-        const status = req.body.status;
+        const {email, password, username } = req.body;
         // crypt password
         const cryptedPassword = await bcrypt.hash(password, 12);
         const user = new User({
             email: email,
             password: cryptedPassword,
-            username: username,
-            status: status
+            username: username
         });
         await user.save();
         res.status(200).json({
-            message: 'User created successfully',
-            data: {...user, password: null}
+            message: 'User created successfully'
         });
         transporter.sendMail({
             to: email,

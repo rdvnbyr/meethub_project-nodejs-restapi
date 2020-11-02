@@ -20,7 +20,7 @@ exports.getProducts = async (req, res, next) => {
     };
 };
 
-exports.getProductsWeeksDeal = async (req, res, next) => {
+exports.getProductsWithStates = async (req, res, next) => {
     try {
         const state = req.body.state;
         const products = await Product.find({state: state});

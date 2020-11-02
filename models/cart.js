@@ -51,7 +51,11 @@ const cartSchema = new Schema(
         paidAt: {type: Date},
         deliveredAt: {type: Date},
         isPaid: {type: Boolean, default: false},
-        isDelivered: {type: Boolean, default: false}
+        isDelivered: {type: Boolean, default: false},
+        isActive: {
+            type: Boolean,
+            default: true
+        }
     },
     {
         timestamps: true

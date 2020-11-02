@@ -13,6 +13,10 @@ router.post('/update-cart',isAuth, cartController.updateCart);
 
 router.post('/update-shipping',isAuth, cartController.updateShipping);
 
+router.post('/payment', cartController.payment);
+
+router.post('/create-payment-intent', cartController.payment);
+
 // router.post('/delete-product', isAuth, cartController.deleteItemFromCart);
 
 router.post('/delete-cart', isAuth, cartController.deleteCart);

@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get( '/get-products', shopController.getProducts );
 
-router.post( '/get-products', shopController.getProductsWeeksDeal );
+router.post( '/get-products', shopController.getProductsWithStates );
 
 router.get('/get-products/:productId', shopController.getOneProduct);
 
