@@ -55,11 +55,14 @@ const authRoutes = require('./routes/auth');
 const shopRoutes = require('./routes/shop');
 const adminRoutes = require('./routes/admin');
 const cartRoutes = require('./routes/cart');
+const subscribeRoutes = require('./routes/subscribe');
 
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
 app.use('/shop', shopRoutes);
 app.use('/cart', cartRoutes);
+app.use('/subscribe', subscribeRoutes);
+
 
 // error handling
 app.use((error, req, res, next) => {

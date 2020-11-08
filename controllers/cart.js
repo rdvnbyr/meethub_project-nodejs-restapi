@@ -2,21 +2,44 @@ const Cart = require('../models/cart');
 const User = require('../models/user');
 const Product = require('../models/products');
 const colors = require('colors');
-const stripe = require('stripe')('sk_test_51HgxbAEraGwCsF1w704UxMC7Ck6OgrZb7wGUqh5CnzWQmGPrEtBzWpjb5tyI7A06cow9RPfrafy9hGjNfN5284pZ00pCYcuYtN');
+const stripe = require('stripe')(process.env.STRIPE_KEY);
 
 exports.payment = async (req,res,next) => {
     try {
-        const {data, price} = req.body;
-        console.log(price)
-        console.log(data);
+        const {price} = req.body;
         const paymentIntent = await stripe.paymentIntents.create({
-            amount: price,
+            amount: price * 100,
             currency: "eur"
           });
-        console.log(paymentIntent)
-        res.send({
+        res.status(200).send({
             clientSecret: paymentIntent.client_secret
           });
+        // res.status(200).json(paymentIntent);
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500;
+        };
+        next(error);
+    }
+};
+
+exports.paymentEnd = async (req,res,next) => {
+    try {
+        const {cartId} = req.body;
+        const cart = await Cart.findById(cartId);
+        if (!cart) {
+            const error = new Error('Cart not found');
+            error.statusCode = 404;
+            throw error;
+        };
+
+        await Cart.findByIdAndUpdate(cartId, {
+            isActive: false,
+            isPaid: true
+        });
+
+        res.status(200).json({message: "Cart is successfully updated"});
+
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500;
@@ -29,7 +52,20 @@ exports.payment = async (req,res,next) => {
 exports.getCart = async (req, res, next) => {
     try {
         const { userId } = req.body;
-        const cart = await Cart.find({customer: userId}).populate('customer').populate({path: 'items', populate: {path: 'product', model: 'Products'}});
+        const cart = await Cart.find({customer: userId, isActive: true, isPaid: false}).populate({path: 'items', populate: {path: 'product', model: 'Products'}});
+        res.status(200).json(cart);
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500;
+        };
+        next(error);
+    }
+};
+
+exports.getPurchasedCart = async (req, res, next) => {
+    try {
+        const userId  = req.userId;
+        const cart = await Cart.find({customer: userId, isActive: false, isPaid: true}).populate('customer').populate({path: 'items', populate: {path: 'product', model: 'Products'}});
         res.status(200).json(cart);
     } catch (error) {
         if (!error.statusCode) {
@@ -94,9 +130,9 @@ exports.createCart = async (req, res, next) => {
 
         } else {
             const isAlreadyAdded = cart.items.filter( (prod,index) => prod.product.toString() === product._id.toString());
-            console.log(isAlreadyAdded);
+            // console.log(isAlreadyAdded);
             if( !(isAlreadyAdded >= 0) ) {
-                res.status(409).json({message: "Product already added"});
+                res.status(409).json({message: "Product already added", status: 409});
             } else {
                 const newItems = {
                     product: product._id,

@@ -8,7 +8,7 @@ const User = require('../models/user');
 
 const transporter = nodemailer.createTransport(sendgridTransporter({
     auth: {
-        api_key: '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'
+        api_key: process.env.SENDGRID_API_KEY
     }
 }));
 
@@ -78,8 +78,8 @@ exports.login = async (req, res, next) => {
                 email: user.email,
                 userid: user._id.toString()
             },
-            'jwt_secret_key',
-            { expiresIn: '24h' }
+            process.env.JWT_SECRET_KEY,
+            { expiresIn: '7d' }
         );
         res.status(200).json({
             token: token,

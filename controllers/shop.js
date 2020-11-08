@@ -1,4 +1,5 @@
 const Product = require('../models/products');
+const User = require('../models/user');
 
 exports.getProducts = async (req, res, next) => {
     try {
@@ -54,4 +55,49 @@ exports.getOneProduct = async (req, res, next) => {
         };
         next(error);
     };
+};
+
+exports.createReview = async (req, res, next) => {
+    try {
+        const { rating, comment } = req.body;
+        console.log(rating, comment)
+        const prodId = req.params.productId;
+        const userId = req.userId;
+        
+        //
+        const product = await Product.findById(prodId);
+        const user = await User.findById(userId);
+        if( !user && !product ) {
+            const error = new Error('Product or user not found');
+            error.statusCode = 404;
+            throw error;
+        };
+
+        //
+        const alreadyReviewed = product.reviews.find( f => f.reviewer.toString() === userId);
+        if( alreadyReviewed ) {
+            const error = new Error('Product already reviwed by user');
+            error.statusCode = 400;
+            throw error;
+        };
+
+        //
+        const newReview = {
+            reviewer: userId,
+            rating: Number(rating),
+            comment: comment
+        };
+        console.log(product)
+        product.reviews.push(newReview);
+        product.numReviews = product.reviews.length;
+        product.rating = product.reviews.reduce((acc, item) => item.rating + acc, 0) / product.reviews.length;
+        await product.save();
+        res.status(200).json({message: "Product successfully reviewed by user"});
+
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500;
+        };
+        next(error);
+    }
 };

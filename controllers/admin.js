@@ -179,7 +179,7 @@ exports.editProduct = async (req, res, next) => {
 exports.deleteProduct = async (req, res, next) => {
     try {
         const prodId = req.params.productId;
-        console.log(prodId);
+        // console.log(prodId);
         const product = await Product.findByIdAndDelete(prodId);
         deleteImage(product.image);
         res.status(200).json({
