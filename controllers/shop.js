@@ -42,7 +42,7 @@ exports.getProductsWithStates = async (req, res, next) => {
 exports.getOneProduct = async (req, res, next) => {
     try {
         const prodId = req.params.productId;
-        const product = await Product.findById(prodId);
+        const product = await Product.findById(prodId).populate({path: 'reviews', populate: {path: 'reviewer', model: 'User'}});
         if (!product) {
             const error = new Error('Product not found');
             error.statusCode = 404;
@@ -59,8 +59,7 @@ exports.getOneProduct = async (req, res, next) => {
 
 exports.createReview = async (req, res, next) => {
     try {
-        const { rating, comment } = req.body;
-        console.log(rating, comment)
+        const { rating, comment, title } = req.body;
         const prodId = req.params.productId;
         const userId = req.userId;
         
@@ -85,15 +84,48 @@ exports.createReview = async (req, res, next) => {
         const newReview = {
             reviewer: userId,
             rating: Number(rating),
+            title: title,
             comment: comment
         };
-        console.log(product)
         product.reviews.push(newReview);
         product.numReviews = product.reviews.length;
         product.rating = product.reviews.reduce((acc, item) => item.rating + acc, 0) / product.reviews.length;
         await product.save();
         res.status(200).json({message: "Product successfully reviewed by user"});
 
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500;
+        };
+        next(error);
+    }
+};
+
+exports.addProductToWishlist = async (req, res, next) => {
+    try {
+        const productId = req.params.productId
+        const userId = req.userId;
+
+        const user = await User.findById(userId);
+        const product = await Product.findById(productId);
+        if( !user || !product ) {
+            const error = new Error('Product or user not found');
+            error.statusCode = 404;
+            throw error;
+        };
+
+        const alreadyAdd = user.wishlist.find( p => p.product.toString() === product._id.toString() );
+        if(alreadyAdd){
+            const updateWishlist = user.wishlist.filter( p => p.product !== alreadyAdd.product);
+            user.wishlist = updateWishlist;
+            await user.save();
+            res.status(200).json({message: "Product successfuly removed in your wishlist"});
+        } else {
+            user.wishlist.push({product: product._id});
+            await user.save();
+            res.status(200).json({message: "Product successfuly added in your wishlist"});
+        };
+        
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500;

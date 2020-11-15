@@ -13,4 +13,6 @@ router.get('/get-products/:productId', shopController.getOneProduct);
 
 router.put('/create-review/:productId',isAuth, shopController.createReview);
 
+router.put('/add-product-wishlist/:productId', isAuth, shopController.addProductToWishlist);
+
 module.exports = router;

@@ -84,8 +84,7 @@ exports.login = async (req, res, next) => {
         res.status(200).json({
             token: token,
             userId: user._id.toString(),
-            user: {...user, password: null},
-            userStatus: user.status
+            user: user
         });
     } catch (error) {
         if (!error.statusCode) {
@@ -93,4 +92,42 @@ exports.login = async (req, res, next) => {
         }
         next(error);
     };
+};
+
+exports.logout = async (req,res,next) => {
+    try {
+        const userId = req.userId;
+        const user = await User.findById(userId);
+        if (!user) {
+            const error = new Error('User not found');
+            error.statusCode = 401;
+            throw error;
+        };
+        res.status(204).json({message: "User successfully signed out"});
+
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500;
+        }
+        next(error);
+    }
+};
+
+exports.getUserWishlist = async (req, res, next) => {
+    try {
+        const userId = req.userId;
+        const user = await User.findById(userId).populate({path: 'wishlist', populate: {path: 'product', model: 'Products'}});
+        if (!user) {
+            const error = new Error('User not found');
+            error.statusCode = 401;
+            throw error;
+        };
+        res.status(200).json(user.wishlist);
+
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500;
+        }
+        next(error);
+    }
 };

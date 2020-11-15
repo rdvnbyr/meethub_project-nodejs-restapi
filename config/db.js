@@ -7,7 +7,8 @@ const connectDB = async (req,res,next) => {
             {
                  useNewUrlParser: true,
                  useUnifiedTopology: true,
-                 useCreateIndex: true
+                 useCreateIndex: true,
+                 useFindAndModify: false
             }
         );
         console.log(`MongDB Connected ${connect.connection.host}`.blue.underline);

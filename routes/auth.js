@@ -6,6 +6,7 @@ const User = require('../models/user');
 const router = express.Router();
 
 const authController = require('../controllers/auth');
+const isAuth = require('../middleware/is-auth');
 
 router.post(
     '/signup',
@@ -26,5 +27,9 @@ router.post(
 );
 
 router.post('/login', authController.login);
+
+router.get('/get-user', isAuth, authController.getUserWishlist);
+
+router.post('/logout', isAuth, authController.logout);
 
 module.exports = router;

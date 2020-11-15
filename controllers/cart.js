@@ -65,7 +65,7 @@ exports.getCart = async (req, res, next) => {
 exports.getPurchasedCart = async (req, res, next) => {
     try {
         const userId  = req.userId;
-        const cart = await Cart.find({customer: userId, isActive: false, isPaid: true}).populate('customer').populate({path: 'items', populate: {path: 'product', model: 'Products'}});
+        const cart = await Cart.find({customer: userId, isActive: false, isPaid: true, isArchived: false}).populate('customer').populate({path: 'items', populate: {path: 'product', model: 'Products'}});
         res.status(200).json(cart);
     } catch (error) {
         if (!error.statusCode) {
@@ -73,6 +73,19 @@ exports.getPurchasedCart = async (req, res, next) => {
         };
         next(error);
     }
+};
+
+exports.sendCartToArchive = async (req, res, next) => {
+    try {
+        const {cartId} = req.body;
+        await Cart.findByIdAndUpdate(cartId, {isArchived: true});
+        res.status(200).json({message: "This Cart succesfully archived by customer"});
+    } catch (error) {
+        if (!error.statusCode) {
+            error.statusCode = 500;
+        };
+        next(error);
+    };
 };
 
 
@@ -117,7 +130,7 @@ exports.createCart = async (req, res, next) => {
                 paymentResult: {},
                 shippingPrice: (product.price * 0.01).toFixed(),
                 taxPrice: (product.price * 0.03).toFixed(),
-                totalPrice: (product.price * 1) + (product.price * 0.01) + (product.price * 0.03),
+                totalPrice: ((product.price * 1) + (product.price * 0.01) + (product.price * 0.03)).toFixed(),
                 shippingAt: '',
                 paidAt: '',
                 deliveredAt: '',
@@ -251,71 +264,3 @@ exports.deleteCart = async (req, res, next) => {
         next(error);
     }
 };
-
-/* exports.deleteItemFromCart = async (req, res, next) => {
-    try {
-        const { userId, productId, cartId } = req.body;
-
-        const cartFindandDelete = await Cart.findByIdAndUpdate(cartId,
-            {
-                customer: userId,
-                items: [
-                    {
-                        product: productId,
-                        isActive: false
-                    }
-                ]
-            }
-        );
-        const cartSave = await cartFindandDelete.save();
-        res.status(200).json(cartSave);
-    } catch (error) {
-        if (!error.statusCode) {
-            error.statusCode = 500;
-        };
-        next(error);
-    }
-}; */
-
-
-
-
-// exports.xpostCartx = async (req, res, next) => {
-//     const userId = req.body.userId;
-//     const productId = req.body.productId;
-
-//     const userCart = await Cart.find({user: userId});
-//     console.log(userCart)
-//     if (userCart) {
-//         const _id = userCart._id
-//         const product = await Cart.find({_id: _id, cart: [{product: productId}]});
-//         console.log(product);
-//         if (product) {
-//             const newQuantity = product.carts.quantity + 1
-//             product.carts.quantity = newQuantity;
-//             const newProduct = new Cart(product);
-//             await newProduct.save();
-//         } else {
-//             const newUserCart = userCart.push({
-//                 carts: [
-//                     {
-//                         product: productId,
-//                         quantity: 1
-//                     }
-//                 ]
-//             });
-//             const userCartModel = new Cart(newUserCart);
-//             await userCartModel.save();
-//         }
-//     }
-//     const newCart = {
-//         user: userId,
-//         carts: [
-//             {
-//                 product: productId,
-//                 quantity: 1
-//             }
-//         ]
-//     }
-//     await newCart.save();
-// }

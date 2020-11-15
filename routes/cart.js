@@ -21,6 +21,8 @@ router.post('/create-payment-intent', cartController.payment);
 
 router.post('/payment-end', cartController.paymentEnd);
 
+router.put('/archived-order', isAuth, cartController.sendCartToArchive);
+
 // router.post('/delete-product', isAuth, cartController.deleteItemFromCart);
 
 router.post('/delete-cart', isAuth, cartController.deleteCart);

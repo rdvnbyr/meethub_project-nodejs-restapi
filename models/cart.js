@@ -55,6 +55,10 @@ const cartSchema = new Schema(
         isActive: {
             type: Boolean,
             default: true
+        },
+        isArchived: {
+            type: Boolean,
+            default: false
         }
     },
     {
