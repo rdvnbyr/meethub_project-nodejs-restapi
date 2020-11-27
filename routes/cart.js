@@ -23,8 +23,6 @@ router.post('/payment-end', cartController.paymentEnd);
 
 router.put('/archived-order', isAuth, cartController.sendCartToArchive);
 
-// router.post('/delete-product', isAuth, cartController.deleteItemFromCart);
-
 router.post('/delete-cart', isAuth, cartController.deleteCart);
 
 module.exports = router;

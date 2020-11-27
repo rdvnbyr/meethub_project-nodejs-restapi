@@ -11,6 +11,9 @@ dotenv.config();
 
 const app = express();
 
+// DB COnnect
+connectDB();
+
 // cors policy
 app.use(cors());
 
@@ -78,8 +81,6 @@ app.use((error, req, res, next) => {
 
 const port = process.env.PORT || 8080;
 
-// DB COnnect
-connectDB();
 app.listen(
     port,
     console.log(`Server running in ${process.env.NODE_ENV} on port ${port}`.yellow.bold)
