@@ -19,7 +19,8 @@ const reviewsSchema = new Schema(
         comment: {
             type: String,
             required: true
-        }
+        },
+        
     },
     {
         timestamps: true

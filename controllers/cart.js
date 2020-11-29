@@ -4,6 +4,7 @@ const Product = require('../models/products');
 const colors = require('colors');
 const stripe = require('stripe')(process.env.STRIPE_KEY);
 
+
 exports.payment = async (req,res,next) => {
     try {
         const {price} = req.body;
@@ -14,7 +15,6 @@ exports.payment = async (req,res,next) => {
         res.status(200).send({
             clientSecret: paymentIntent.client_secret
           });
-        // res.status(200).json(paymentIntent);
     } catch (error) {
         if (!error.statusCode) {
             error.statusCode = 500;
@@ -32,6 +32,13 @@ exports.paymentEnd = async (req,res,next) => {
             error.statusCode = 404;
             throw error;
         };
+        // console.log(cart);
+        // await cart.items.map( async item => {
+        //     const product = Product.findById(item.product);
+        //     console.log(product)
+        //     const updatedStock = product.countInStock - item.quantity;
+        //     await Product.findByIdAndUpdate(product._id, {countInStock: updatedStock});
+        // });
 
         await Cart.findByIdAndUpdate(cartId, {
             isActive: false,
@@ -197,7 +204,7 @@ exports.updateShipping = async (req, res, next) => {
 
 exports.updateCart = async (req, res, next) => {
     try {
-        const { userId, productId, qty, cartId, removeProduct } = req.body;
+        const { productId, qty, cartId, removeProduct } = req.body;
         const product = await Product.findById(productId);
         if (!product) {
             const error = new Error('Product not found');

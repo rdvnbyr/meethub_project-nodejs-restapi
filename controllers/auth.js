@@ -6,11 +6,19 @@ const sendgridTransporter = require('nodemailer-sendgrid-transport');
 
 const User = require('../models/user');
 
-const transporter = nodemailer.createTransport(sendgridTransporter({
+// const transporter = nodemailer.createTransport(sendgridTransporter({
+//     auth: {
+//         api_key: process.env.SENDGRID_API_KEY
+//     }
+// }));
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
     auth: {
-        api_key: process.env.SENDGRID_API_KEY
+      user: process.env.GMAIL,
+      pass: process.env.GMAIL_PASS // naturally, replace both with your real credentials or an application-specific password
     }
-}));
+  });
 
 exports.signup = async (req, res, next) => {
     try {
@@ -34,12 +42,26 @@ exports.signup = async (req, res, next) => {
         res.status(200).json({
             message: 'User created successfully'
         });
-        transporter.sendMail({
-            to: email,
+        const mailOptions = {
             from: 'test@webdevscope.com',
-            subject: 'kayit islemi basari ile gerceklesmistir.',
-            html: `<h1>MERHABA</h1><h3>${username}</h3>`
-        });
+            to: email,
+            subject: `Welcome ${email}`,
+            text: 'Have a nice shopping'
+          };
+    
+          transporter.sendMail(mailOptions, function(error, info){
+            if (error) {
+              console.log(error);
+            } else {
+              console.log('Email sent: ' + info.response);
+            }
+          });
+        // transporter.sendMail({
+        //     to: email,
+        //     from: 'test@webdevscope.com',
+        //     subject: 'kayit islemi basari ile gerceklesmistir.',
+        //     html: `<h1>MERHABA</h1><h3>${username}</h3>`
+        // });
     } catch(error) {
         if (!error.statusCode) {
             error.statusCode = 500;

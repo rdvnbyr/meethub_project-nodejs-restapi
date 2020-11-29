@@ -3,11 +3,19 @@ const { validationResult } = require('express-validator');
 const nodemailer = require('nodemailer');
 const sendgridTransporter = require('nodemailer-sendgrid-transport');
 
-const transporter = nodemailer.createTransport(sendgridTransporter({
+// const transporter = nodemailer.createTransport(sendgridTransporter({
+//     auth: {
+//         api_key: process.env.SENDGRID_API_KEY
+//     }
+// }));
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
     auth: {
-        api_key: process.env.SENDGRID_API_KEY
+      user: process.env.GMAIL,
+      pass: process.env.GMAIL_PASS // naturally, replace both with your real credentials or an application-specific password
     }
-}));
+  });
 
 exports.contactUs = async (req, res, next) => {
     const errors = validationResult(req);
@@ -38,10 +46,25 @@ exports.contactUs = async (req, res, next) => {
     await subscribeObject.save();
     res.status(200).json({message: "Message sended successfully"});
 
-    transporter.sendMail({
-        to: 'rdvnbyr34@gmail.com',
-        from: process.env.SEND_EMAIL_FROM,
-        subject: subject || 'kayit islemi basari ile gerceklesmistir.',
-        html: `<h1>${subject}</h1><h3>${message}</h3>`
-    });
+    const mailOptions = {
+        from: 'test@webdevscope.com',
+        to: email,
+        subject: `Hello ${firstName} ${lastName}`,
+        text: 'Your message has been received. We will get back to you as soon as possible. Thank you'
+      };
+
+      transporter.sendMail(mailOptions, function(error, info){
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email sent: ' + info.response);
+        }
+      });
+
+    // transporter.sendMail({
+    //     to: 'rdvnbyr34@gmail.com',
+    //     from: process.env.SEND_EMAIL_FROM,
+    //     subject: subject || 'kayit islemi basari ile gerceklesmistir.',
+    //     html: `<h1>${subject}</h1><h3>${message}</h3>`
+    // });
 };

@@ -6,6 +6,7 @@ const cors = require('cors');
 const multer = require('multer');
 const dotenv = require('dotenv');
 const colors = require('colors');
+const {v4: uuidv4} = require('uuid');
 
 dotenv.config();
 
@@ -26,7 +27,7 @@ const fileStorage = multer.diskStorage({
         cb(null, 'images');
     },
     filename: (req, file, cb) => {// hangi ism ile kayit yapilacak
-        cb( null, new Date().toISOString() + '-' + file.originalname );
+        cb( null, uuidv4() + '-' + file.originalname );
     }
 });
 
