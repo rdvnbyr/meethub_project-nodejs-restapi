@@ -196,6 +196,6 @@ exports.deleteProduct = async (req, res, next) => {
 
 
 const deleteImage = filePath => {
-    filePath = path.join(__dirname + '..', filePath );
-    fs.unlink( filePath, error => console.log(error) );
+    const filePathDelete = path.join(__dirname + '/../', filePath );
+    fs.unlink( filePathDelete, error => console.log(error) );
 };

@@ -1,10 +1,10 @@
 
 module.exports = async (req, res, next) => {
     try {
-        if (req.status === 'admin') {
+        if (req.isAdmin) {
             next();
         } else {
-            const error = new Error('Not autenticated');
+            const error = new Error('You are not authorized this action.');
             error.statusCode = 401;
             throw error;
         };

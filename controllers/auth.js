@@ -72,22 +72,13 @@ exports.signup = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
     try {
-        const email = req.body.email;
-        const password = req.body.password;
+        const {email, password} = req.body;
         const user = await User.findOne({email: email});
         if (!user) {
             const error = new Error('User not found');
             error.statusCode = 401;
             throw error;
         };
-
-        const status = user.status;
-        // // status control for admin
-        // if ((status || status === "") && status !== 'admin') {
-        //     const error = new Error('Only the admin user can access');
-        //     error.statusCode = 401;
-        //     throw error;
-        // };
 
         const isEqual = await bcrypt.compare(password, user.password);
         if (!isEqual) {
@@ -98,7 +89,7 @@ exports.login = async (req, res, next) => {
         const token = jwt.sign(
             {
                 email: user.email,
-                userid: user._id.toString()
+                userid: user._id.toString()// ** //
             },
             process.env.JWT_SECRET_KEY,
             { expiresIn: '7d' }
