@@ -30,7 +30,7 @@ exports.getProducts = async (req, res, next) => {
 exports.getOneProduct = async (req, res, next) => {
     try {
         const prodId = req.body._id;
-        const product = await Product.findById(prodId);
+        const product = await Product.findById(prodId).populate({path: 'reviews', populate: {path: 'reviewer', model: 'User'}});
         
         if (!product) {
             const error = new Error('Product not found');
@@ -85,8 +85,7 @@ exports.postProducts = async (req, res, next) => {
             });
             await product.save();
             res.status(200).json({
-                message: 'Product successfully created by admin',
-                data: product
+                message: 'Product successfully created by admin'
             });
         } else {
             const error = new Error('User not found');
@@ -107,7 +106,7 @@ exports.postProducts = async (req, res, next) => {
 exports.getUpdateProduct = async (req, res, next) => {
     try {
         const prodId = req.params.productId;
-        const product = await Product.findById(prodId);
+        const product = await Product.findById(prodId).populate({path: 'reviews', populate: {path: 'reviewer', model: 'User'}});
         if (!product) {
             const error = new Error('Product not found');
             error.statusCode = 404;
@@ -183,8 +182,7 @@ exports.deleteProduct = async (req, res, next) => {
         const product = await Product.findByIdAndDelete(prodId);
         deleteImage(product.image);
         res.status(200).json({
-            message: 'Product successfully deleted',
-            data: product
+            message: 'Product successfully deleted'
         });
     } catch (error) {
         if (!error.statusCode) {
