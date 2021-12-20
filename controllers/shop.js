@@ -6,6 +6,7 @@ exports.getProducts = async (req, res, next) => {
         // const page = req.query.page;
         // const limit = req.body.limit;
         // console.log(page,limit)
+
         const products = await Product.find();
         if (!products) {
             const error = new Error('Products not found');
